@@ -1,0 +1,3 @@
+# Agent 12 — requirements
+
+_Session log — update at end of every session_

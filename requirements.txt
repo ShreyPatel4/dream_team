@@ -1,0 +1,11 @@
+google-genai
+anthropic
+slack_bolt
+prometheus_client
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+python-dotenv
+pyyaml
+certifi
+requests

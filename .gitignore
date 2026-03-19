@@ -1,0 +1,50 @@
+# ─── Secrets ───
+.env
+*.env.local
+
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.so
+.venv/
+venv/
+env/
+
+# ─── Logs ───
+*.log
+logs/
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ─── IDE ───
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# ─── Docker ───
+docker-compose.override.yml
+
+# ─── Runtime state (regenerated automatically) ───
+context-store/inbox/*.md
+notebooks/*/scratch/
+project-tracker/audit-log/
+*.jsonl
+
+# ─── Telemetry (lives in ~/.coconutos/) ───
+# Telemetry logs are stored outside the repo at ~/.coconutos/logs/
+# This is intentional — they should never be committed.
+
+# ─── Grafana data ───
+grafana/data/

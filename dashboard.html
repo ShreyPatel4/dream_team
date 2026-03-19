@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoconutOS — Agent Runtime Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-app: #fafaf8; --bg-sidebar: #f0efeb; --bg-card: #ffffff;
+  --bg-hover: rgba(0,0,0,0.04); --bg-active: rgba(0,0,0,0.07);
+  --bg-tab: #ffffff; --bg-tab-bar: #e8e7e3; --bg-input: #f5f4f0;
+  --text-1: #1a1917; --text-2: #6b6a65; --text-3: #9e9d98;
+  --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.15);
+  --accent: #2d7ff9; --accent-soft: rgba(45,127,249,0.1); --accent-text: #1a6ae6;
+  --green: #1a9e6f; --green-bg: #e6f7ef; --green-text: #0d6b4a;
+  --amber: #c07d15; --amber-bg: #fef3d6; --amber-text: #7c5006;
+  --red: #d93636; --red-bg: #fde8e8; --red-text: #991b1b;
+  --blue-bg: #e6f1fb; --blue-text: #185fa5;
+  --purple: #7c5cbf; --purple-bg: #f0ecfa;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
+  --radius: 10px; --radius-sm: 6px; --radius-lg: 14px;
+  --font: 'DM Sans', -apple-system, sans-serif; --mono: 'JetBrains Mono', monospace;
+  --sidebar-w: 260px; --tab-h: 42px;
+}
+.dark {
+  --bg-app: #161615; --bg-sidebar: #1e1e1c; --bg-card: #222220;
+  --bg-hover: rgba(255,255,255,0.05); --bg-active: rgba(255,255,255,0.08);
+  --bg-tab: #2a2a28; --bg-tab-bar: #1a1a18; --bg-input: #2a2a28;
+  --text-1: #ededeb; --text-2: #9a9a95; --text-3: #6b6b66;
+  --border: rgba(255,255,255,0.07); --border-strong: rgba(255,255,255,0.12);
+  --accent: #5b9cf5; --accent-soft: rgba(91,156,245,0.12); --accent-text: #7db5ff;
+  --green: #3dc98a; --green-bg: rgba(61,201,138,0.12); --green-text: #5be0a3;
+  --amber: #e8a62e; --amber-bg: rgba(232,166,46,0.12); --amber-text: #f0be5a;
+  --red: #f06060; --red-bg: rgba(240,96,96,0.12); --red-text: #f78e8e;
+  --blue-bg: rgba(91,156,245,0.12); --blue-text: #7db5ff;
+  --purple: #a88de0; --purple-bg: rgba(168,141,224,0.12);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3); --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.5);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:var(--bg-app); color:var(--text-1); height:100vh; overflow:hidden; display:flex; transition: background .3s, color .3s; }
+
+.sidebar { width:var(--sidebar-w); height:100vh; background:var(--bg-sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; transition:background .3s; }
+.sidebar-header { padding:16px 18px 12px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+.sidebar-logo { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,#f59e0b,#d97706); display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:600; }
+.sidebar-title { font-size:14px; font-weight:600; letter-spacing:-0.3px; }
+.sidebar-subtitle { font-size:10px; color:var(--text-3); letter-spacing:0.5px; text-transform:uppercase; margin-top:1px; }
+.sidebar-nav { flex:1; overflow-y:auto; padding:8px; }
+.nav-section-label { font-size:10px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:0.8px; padding:12px 10px 6px; }
+.nav-item { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; color:var(--text-2); transition:all .15s; user-select:none; }
+.nav-item:hover { background:var(--bg-hover); color:var(--text-1); }
+.nav-item.active { background:var(--bg-active); color:var(--text-1); font-weight:500; }
+.nav-item svg { width:16px; height:16px; flex-shrink:0; opacity:.6; }
+.nav-item.active svg { opacity:1; }
+.nav-badge { margin-left:auto; font-size:10px; font-weight:600; padding:1px 6px; border-radius:10px; min-width:18px; text-align:center; }
+.sidebar-footer { padding:12px; border-top:1px solid var(--border); }
+.theme-toggle { width:100%; padding:7px 10px; border-radius:var(--radius-sm); border:none; background:var(--bg-hover); color:var(--text-2); font-size:12px; font-family:var(--font); cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .15s; }
+.theme-toggle:hover { background:var(--bg-active); color:var(--text-1); }
+
+.main { flex:1; display:flex; flex-direction:column; min-width:0; }
+
+/* TAB BAR */
+.tab-bar { height:var(--tab-h); background:var(--bg-tab-bar); display:flex; align-items:flex-end; padding:0 8px; gap:2px; border-bottom:1px solid var(--border); flex-shrink:0; overflow-x:auto; transition:background .3s; }
+.tab-bar::-webkit-scrollbar { display:none; }
+.tab { display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px 8px 0 0; font-size:12px; font-weight:400; color:var(--text-3); cursor:pointer; white-space:nowrap; transition:all .15s; background:transparent; border:1px solid transparent; border-bottom:none; }
+.tab:hover { color:var(--text-2); background:var(--bg-hover); }
+.tab.active { background:var(--bg-app); color:var(--text-1); font-weight:500; border-color:var(--border); }
+.tab-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.tab-add { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; font-size:16px; color:var(--text-3); cursor:pointer; transition:all .15s; margin-bottom:2px; border:1px dashed var(--border); background:transparent; font-family:var(--font); }
+.tab-add:hover { background:var(--bg-hover); color:var(--text-1); border-color:var(--border-strong); }
+
+.content { flex:1; overflow-y:auto; padding:24px 28px; }
+.content::-webkit-scrollbar { width:6px; }
+.content::-webkit-scrollbar-track { background:transparent; }
+.content::-webkit-scrollbar-thumb { background:var(--border-strong); border-radius:3px; }
+
+.project-header { margin:0 0 24px; }
+.project-row { display:flex; align-items:center; gap:12px; margin:0 0 6px; }
+.project-name { font-size:22px; font-weight:600; letter-spacing:-0.5px; }
+.status-badge { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; letter-spacing:0.3px; text-transform:uppercase; }
+.project-meta { font-size:13px; color:var(--text-2); }
+
+.metric-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:0 0 28px; }
+@media(max-width:900px) { .metric-grid { grid-template-columns:repeat(2,1fr); } }
+.metric-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; transition:all .2s; }
+.metric-card:hover { border-color:var(--border-strong); box-shadow:var(--shadow-sm); }
+.metric-label { font-size:10px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:0.6px; margin:0 0 6px; }
+.metric-value { font-size:26px; font-weight:600; letter-spacing:-0.5px; line-height:1.1; }
+.metric-sub { font-size:11px; color:var(--text-3); margin-top:4px; }
+
+.panel { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); margin:0 0 20px; overflow:hidden; transition:border-color .2s; }
+.panel:hover { border-color:var(--border-strong); }
+.panel-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
+.panel-title { font-size:13px; font-weight:600; letter-spacing:-0.2px; }
+.panel-action { font-size:11px; color:var(--accent-text); cursor:pointer; font-weight:500; padding:3px 8px; border-radius:var(--radius-sm); transition:background .15s; }
+.panel-action:hover { background:var(--accent-soft); }
+
+.agent-row { display:flex; align-items:center; padding:10px 18px; gap:12px; border-bottom:1px solid var(--border); transition:background .1s; cursor:default; }
+.agent-row:last-child { border-bottom:none; }
+.agent-row:hover { background:var(--bg-hover); }
+.a-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.a-id { font-size:13px; font-weight:600; width:40px; font-family:var(--mono); }
+.a-role { font-size:13px; color:var(--text-2); flex:1; }
+.a-status { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; letter-spacing:0.3px; text-transform:uppercase; }
+.a-cost { font-size:13px; color:var(--text-2); width:60px; text-align:right; font-family:var(--mono); font-weight:500; }
+.a-tokens { font-size:11px; color:var(--text-3); width:70px; text-align:right; }
+.a-bar-wrap { width:60px; height:4px; background:var(--bg-input); border-radius:2px; overflow:hidden; }
+.a-bar { height:100%; border-radius:2px; transition:width .6s ease; }
+.standby-row { text-align:center; padding:12px 18px; font-size:11px; color:var(--text-3); border-bottom:none; }
+
+.budget-wrap { padding:16px 18px; }
+.budget-bar { height:8px; background:var(--bg-input); border-radius:4px; overflow:hidden; position:relative; }
+.budget-fill { height:100%; border-radius:4px; transition:width .8s ease; position:relative; }
+.budget-fill::after { content:''; position:absolute; right:0; top:0; bottom:0; width:24px; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35)); border-radius:0 4px 4px 0; animation:budgetShimmer 2s ease-in-out infinite; }
+@keyframes budgetShimmer { 0%,100% { opacity:.3; } 50% { opacity:1; } }
+.budget-labels { display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--text-3); }
+.budget-amount { font-family:var(--mono); font-weight:500; color:var(--text-2); }
+.budget-breakdown { display:flex; gap:16px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); flex-wrap:wrap; }
+.budget-chip { font-size:10px; background:var(--bg-input); padding:3px 8px; border-radius:4px; font-family:var(--mono); color:var(--text-2); }
+
+.event-scroller { max-height:380px; overflow-y:auto; }
+.event-row { display:flex; gap:10px; padding:8px 18px; font-size:12px; border-bottom:1px solid var(--border); transition:background .1s; }
+.event-row:last-child { border-bottom:none; }
+.event-row:hover { background:var(--bg-hover); }
+.event-time { font-family:var(--mono); color:var(--text-3); width:44px; flex-shrink:0; font-size:11px; }
+.event-agent { font-family:var(--mono); font-weight:600; width:50px; flex-shrink:0; color:var(--accent-text); font-size:11px; }
+.event-msg { color:var(--text-2); flex:1; line-height:1.4; }
+.event-type { font-size:9px; font-family:var(--mono); color:var(--text-3); background:var(--bg-input); padding:1px 5px; border-radius:3px; flex-shrink:0; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+@media(max-width:1000px) { .two-col { grid-template-columns:1fr; } }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--bg-card); border:1px solid var(--border-strong); border-radius:var(--radius-lg); padding:28px; width:440px; max-width:90vw; box-shadow:var(--shadow-lg); }
+.modal h2 { font-size:18px; font-weight:600; margin:0 0 20px; letter-spacing:-0.3px; }
+.modal label { font-size:11px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:0.5px; display:block; margin:0 0 4px; }
+.modal input,.modal select,.modal textarea { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-input); color:var(--text-1); font-family:var(--font); font-size:13px; margin:0 0 14px; outline:none; transition:border-color .15s; }
+.modal input:focus,.modal select:focus,.modal textarea:focus { border-color:var(--accent); }
+.modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:6px; }
+.btn { padding:8px 18px; border-radius:var(--radius-sm); font-size:13px; font-weight:500; font-family:var(--font); cursor:pointer; border:1px solid var(--border); transition:all .15s; }
+.btn-ghost { background:transparent; color:var(--text-2); }
+.btn-ghost:hover { background:var(--bg-hover); }
+.btn-primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn-primary:hover { opacity:0.9; }
+
+.cmd-bar { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--bg-card); border:1px solid var(--border-strong); border-radius:12px; padding:6px 8px; display:flex; align-items:center; gap:6px; box-shadow:var(--shadow-lg); z-index:100; min-width:400px; }
+.cmd-input { flex:1; border:none; background:transparent; font-size:13px; font-family:var(--font); color:var(--text-1); outline:none; padding:6px 8px; }
+.cmd-input::placeholder { color:var(--text-3); }
+.cmd-key { font-size:10px; font-family:var(--mono); color:var(--text-3); background:var(--bg-input); padding:3px 6px; border-radius:4px; border:1px solid var(--border); white-space:nowrap; }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+.live-dot { animation:pulse 2s ease infinite; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.fade-in { animation:fadeUp .4s ease both; }
+
+.refresh-bar { position:fixed; top:0; left:var(--sidebar-w); right:0; height:2px; z-index:200; pointer-events:none; }
+.refresh-bar-fill { height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--green)); transition:width .3s; border-radius:0 1px 1px 0; }
+
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px; color:var(--text-3); text-align:center; }
+.empty-state svg { width:48px; height:48px; margin-bottom:16px; opacity:.4; }
+.empty-state p { font-size:13px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<div class="refresh-bar"><div class="refresh-bar-fill" id="refreshBar"></div></div>
+
+<!-- MODAL: Add Project -->
+<div class="modal-overlay" id="addProjectModal">
+  <div class="modal">
+    <h2>New project</h2>
+    <label>Project name</label>
+    <input type="text" id="projNameInput" placeholder="e.g. Data-Kitchen v3">
+    <label>Workspace path (optional)</label>
+    <input type="text" id="projPathInput" placeholder="/Users/shrey/Projects/data-kitchen">
+    <label>Budget (USD)</label>
+    <input type="number" id="projBudgetInput" value="50" min="1" max="500">
+    <label>Description</label>
+    <textarea id="projDescInput" rows="2" placeholder="Brief project description"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createProject()">Create project</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">C</div>
+    <div>
+      <div class="sidebar-title">CoconutOS</div>
+      <div class="sidebar-subtitle">Agent Runtime</div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a4 4 0 014-4h8a4 4 0 014 4v1"/></svg>
+      Agents
+      <span class="nav-badge" id="navAgentBadge" style="background:var(--green-bg);color:var(--green-text);">0</span>
+    </div>
+    <div class="nav-section-label">Monitoring</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Event log
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Budget
+    </div>
+    <div class="nav-section-label">Observability</div>
+    <div class="nav-item" onclick="window.open('http://localhost:3000','_blank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      Grafana
+      <span class="nav-badge" style="background:var(--amber-bg);color:var(--amber-text);">:3000</span>
+    </div>
+    <div class="nav-item" onclick="window.open('http://localhost:9090','_blank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Prometheus
+      <span class="nav-badge" style="background:var(--blue-bg);color:var(--blue-text);">:9090</span>
+    </div>
+    <div class="nav-item" onclick="window.open('http://localhost:16686','_blank')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Jaeger
+      <span class="nav-badge" style="background:var(--purple-bg);color:var(--purple);">:16686</span>
+    </div>
+    <div class="nav-section-label">Integrations</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Slack
+      <span class="nav-badge" style="background:var(--accent-soft);color:var(--accent-text);">—</span>
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+      Trello
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span id="themeLabel">Switch to dark</span>
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="tab-bar" id="tabBar">
+    <div class="tab active" data-project="">
+      <span class="tab-dot live-dot" style="background:var(--green);" id="tabDot"></span>
+      <span>Overview</span>
+    </div>
+    <button class="tab-add" onclick="openModal()" title="Add project">+</button>
+  </div>
+
+  <div class="content">
+    <div class="project-header">
+      <div class="project-row">
+        <span class="project-name" id="projName">CoconutOS Runtime</span>
+        <span class="status-badge" id="projBadge" style="background:var(--green-bg);color:var(--green-text);">IDLE</span>
+        <span class="a-dot live-dot" style="background:var(--green);width:6px;height:6px;margin-left:4px;"></span>
+      </div>
+      <div class="project-meta" id="projMeta">Initializing...</div>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card fade-in">
+        <div class="metric-label">Active agents</div>
+        <div class="metric-value" id="kpiAgents">—</div>
+        <div class="metric-sub" id="kpiAgentsSub">of 31 registered</div>
+      </div>
+      <div class="metric-card fade-in">
+        <div class="metric-label">Total cost</div>
+        <div class="metric-value" id="kpiCost" style="color:var(--green);">$0.00</div>
+        <div class="metric-sub" id="kpiCostSub">of $50.00 budget</div>
+      </div>
+      <div class="metric-card fade-in">
+        <div class="metric-label">Burn rate</div>
+        <div class="metric-value" id="kpiBurn">$0.00<span style="font-size:14px;font-weight:400;color:var(--text-3);">/min</span></div>
+        <div class="metric-sub" id="kpiBurnSub">est. hourly: $0.00</div>
+      </div>
+      <div class="metric-card fade-in">
+        <div class="metric-label">LLM calls</div>
+        <div class="metric-value" id="kpiCalls">0</div>
+        <div class="metric-sub" id="kpiCallsSub">0 tokens consumed</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <span class="panel-title">Agent status</span>
+            <span class="panel-action" id="agentViewAll"></span>
+          </div>
+          <div id="agentList"></div>
+        </div>
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <span class="panel-title">Budget utilization</span>
+            <span style="font-size:12px;font-family:var(--mono);color:var(--text-2);" id="budgetPctLabel">0%</span>
+          </div>
+          <div class="budget-wrap">
+            <div class="budget-bar">
+              <div class="budget-fill" id="budgetFill" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--green));"></div>
+            </div>
+            <div class="budget-labels">
+              <span>$0</span>
+              <span class="budget-amount" id="budgetSpentLabel">$0.00 spent</span>
+              <span id="budgetMaxLabel">$50.00</span>
+            </div>
+            <div class="budget-breakdown" id="budgetBreakdown"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <span class="panel-title">Recent events</span>
+            <span class="panel-action" id="eventCount">0 events</span>
+          </div>
+          <div class="event-scroller" id="eventList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cmd-bar">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <input class="cmd-input" placeholder="Ask Agent 08 or search tasks, agents, events..." id="cmdInput">
+  <span class="cmd-key">⌘K</span>
+</div>
+
+<script>
+const API = '';
+const REFRESH_MS = 3000;
+let currentProjectId = null;
+
+function fmt(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return String(n);
+}
+function fmtElapsed(s) {
+  if (!s) return '0s';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return h ? `${h}h ${m}m` : m ? `${m}m ${sec}s` : `${sec}s`;
+}
+
+function statusStyle(s) {
+  const map = {
+    EXECUTING:{bg:'var(--amber-bg)',color:'var(--amber-text)',dot:'var(--amber)'},
+    REVIEWING:{bg:'var(--blue-bg)',color:'var(--blue-text)',dot:'var(--accent)'},
+    MONITORING:{bg:'var(--blue-bg)',color:'var(--blue-text)',dot:'var(--accent)'},
+    PLANNING:{bg:'var(--purple-bg)',color:'var(--purple)',dot:'var(--purple)'},
+    INITIALIZING:{bg:'var(--amber-bg)',color:'var(--amber-text)',dot:'var(--amber)'},
+    IDLE:{bg:'var(--green-bg)',color:'var(--green-text)',dot:'var(--green)'},
+    WATCHING:{bg:'var(--green-bg)',color:'var(--green-text)',dot:'var(--green)'},
+    STANDBY:{bg:'var(--bg-input)',color:'var(--text-3)',dot:'var(--text-3)'},
+  };
+  return map[s] || map.STANDBY;
+}
+
+// ─── Render ──────────────────────────────────────────
+function paint(d) {
+  // Header
+  const pn = d.project?.name || 'CoconutOS Runtime';
+  document.getElementById('projName').textContent = pn;
+  const ps = statusStyle(d.project?.status || 'IDLE');
+  const badge = document.getElementById('projBadge');
+  badge.textContent = d.project?.status || 'IDLE';
+  badge.style.background = ps.bg; badge.style.color = ps.color;
+
+  const kpi = d.kpi || {};
+  const elapsed = d.project?.elapsed_seconds ? fmtElapsed(d.project.elapsed_seconds) : (d.project?.elapsed || '0s');
+  document.getElementById('projMeta').textContent =
+    `Uptime ${elapsed} — ${kpi.llm_calls||0} LLM calls — ${kpi.active_agents||0} agents active`;
+
+  // KPIs
+  document.getElementById('kpiAgents').textContent = kpi.active_agents || 0;
+  document.getElementById('kpiAgentsSub').textContent = `of ${kpi.total_agents||31} registered`;
+  const cost = kpi.total_cost || 0;
+  document.getElementById('kpiCost').textContent = `$${cost.toFixed(2)}`;
+  document.getElementById('kpiCost').style.color = cost > (kpi.budget_limit||50)*0.8 ? 'var(--red)' : 'var(--green)';
+  document.getElementById('kpiCostSub').textContent = `of $${(kpi.budget_limit||50).toFixed(2)} budget`;
+  document.getElementById('kpiBurn').innerHTML = `$${(kpi.burn_rate||0).toFixed(2)}<span style="font-size:14px;font-weight:400;color:var(--text-3);">/min</span>`;
+  document.getElementById('kpiBurnSub').textContent = `est. hourly: $${(kpi.est_hourly||0).toFixed(2)}`;
+  document.getElementById('kpiCalls').textContent = kpi.llm_calls || 0;
+  document.getElementById('kpiCallsSub').textContent = `${fmt(kpi.total_tokens||0)} tokens consumed`;
+  document.getElementById('navAgentBadge').textContent = kpi.active_agents || 0;
+
+  // Agents
+  const agents = d.agents || [];
+  const active = agents.filter(a => a.status !== 'STANDBY');
+  const standby = agents.filter(a => a.status === 'STANDBY');
+  document.getElementById('agentViewAll').textContent = `${active.length} active`;
+  let html = '';
+  for (const a of active) {
+    const st = statusStyle(a.status);
+    const isLive = a.status === 'EXECUTING' || a.status === 'INITIALIZING';
+    html += `<div class="agent-row">
+      <div class="a-dot ${isLive?'live-dot':''}" style="background:${st.dot}"></div>
+      <span class="a-id">${a.id}</span>
+      <span class="a-role">${a.name}</span>
+      <span class="a-status" style="background:${st.bg};color:${st.color};">${a.status}</span>
+      <div class="a-bar-wrap"><div class="a-bar" style="width:${a.pct||0}%;background:${st.dot};"></div></div>
+      <span class="a-cost">$${(a.cost||0).toFixed(2)}</span>
+      <span class="a-tokens">${fmt(a.tokens||0)} tok</span>
+    </div>`;
+  }
+  if (standby.length) html += `<div class="standby-row">⏸ ${standby.length} agents on standby</div>`;
+  if (!agents.length) html = '<div class="empty-state"><p>No agent activity yet. Trigger a task via Slack.</p></div>';
+  document.getElementById('agentList').innerHTML = html;
+
+  // Budget
+  const budgetLimit = kpi.budget_limit || 50;
+  const pct = kpi.budget_pct || 0;
+  document.getElementById('budgetPctLabel').textContent = `${pct.toFixed(1)}%`;
+  const fill = document.getElementById('budgetFill');
+  fill.style.width = `${Math.min(pct,100)}%`;
+  fill.style.background = pct > 80 ? 'linear-gradient(90deg,var(--amber),var(--red))' : 'linear-gradient(90deg,var(--accent),var(--green))';
+  document.getElementById('budgetSpentLabel').textContent = `$${cost.toFixed(2)} spent`;
+  document.getElementById('budgetMaxLabel').textContent = `$${budgetLimit.toFixed(2)}`;
+
+  // Budget breakdown chips
+  const budget = d.budget || {};
+  let breakdownHtml = '';
+  if (budget.by_provider) {
+    for (const [prov, amt] of Object.entries(budget.by_provider)) {
+      if (amt > 0) breakdownHtml += `<span class="budget-chip">${prov}: $${amt.toFixed(3)}</span>`;
+    }
+  }
+  if (budget.by_model) {
+    for (const [model, amt] of Object.entries(budget.by_model)) {
+      if (amt > 0) breakdownHtml += `<span class="budget-chip">${model}: $${amt.toFixed(3)}</span>`;
+    }
+  }
+  document.getElementById('budgetBreakdown').innerHTML = breakdownHtml;
+
+  // Events
+  const events = d.events || [];
+  document.getElementById('eventCount').textContent = `${events.length} events`;
+  let evHtml = '';
+  for (const e of events) {
+    const typeTag = e.type ? `<span class="event-type">${e.type.replace(/_/g,' ')}</span>` : '';
+    evHtml += `<div class="event-row">
+      <span class="event-time">${e.time||''}</span>
+      <span class="event-agent">${e.agent||'sys'}</span>
+      <span class="event-msg">${e.message||''}</span>
+      ${typeTag}
+    </div>`;
+  }
+  if (!events.length) evHtml = '<div class="empty-state"><p>No events yet. Trigger a task via Slack.</p></div>';
+  document.getElementById('eventList').innerHTML = evHtml;
+
+  // Project tabs (if data includes project list)
+  if (d.projects && d.projects.length) {
+    renderTabs(d.projects);
+  }
+}
+
+// ─── Tabs ────────────────────────────────────────────
+function renderTabs(projects) {
+  const bar = document.getElementById('tabBar');
+  const addBtn = bar.querySelector('.tab-add');
+  // Remove old project tabs (keep overview + add button)
+  bar.querySelectorAll('.tab[data-project]').forEach(t => { if (t.dataset.project !== '') t.remove(); });
+  for (const p of projects) {
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (currentProjectId === p.id ? ' active' : '');
+    tab.dataset.project = p.id;
+    tab.innerHTML = `<span class="tab-dot" style="background:${p.color||'var(--accent)'}"></span><span>${p.name}</span>`;
+    tab.onclick = () => switchProject(p.id);
+    bar.insertBefore(tab, addBtn);
+  }
+  // Update overview tab
+  const overview = bar.querySelector('.tab[data-project=""]');
+  if (overview) {
+    overview.classList.toggle('active', !currentProjectId);
+    overview.onclick = () => switchProject(null);
+  }
+}
+
+function switchProject(pid) {
+  currentProjectId = pid;
+  document.querySelectorAll('.tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.project === (pid||'')));
+  tick();
+}
+
+// ─── Modal ───────────────────────────────────────────
+function openModal() { document.getElementById('addProjectModal').classList.add('open'); document.getElementById('projNameInput').focus(); }
+function closeModal() { document.getElementById('addProjectModal').classList.remove('open'); }
+async function createProject() {
+  const name = document.getElementById('projNameInput').value.trim();
+  if (!name) return;
+  const body = {
+    name,
+    path: document.getElementById('projPathInput').value.trim(),
+    budget_usd: parseFloat(document.getElementById('projBudgetInput').value) || 50,
+    description: document.getElementById('projDescInput').value.trim(),
+  };
+  try {
+    const res = await fetch(`${API}/api/projects`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    if (res.ok) {
+      const project = await res.json();
+      closeModal();
+      document.getElementById('projNameInput').value = '';
+      document.getElementById('projPathInput').value = '';
+      document.getElementById('projDescInput').value = '';
+      switchProject(project.id);
+    } else {
+      const err = await res.json();
+      alert(err.error || 'Failed to create project');
+    }
+  } catch(e) { alert('Server error: ' + e.message); }
+}
+
+// ─── Silent Fetch ────────────────────────────────────
+async function tick() {
+  const bar = document.getElementById('refreshBar');
+  bar.style.width = '60%';
+  try {
+    const url = currentProjectId
+      ? `${API}/api/project/${currentProjectId}`
+      : `${API}/api/state`;
+    const r = await fetch(url);
+    const d = await r.json();
+    bar.style.width = '100%';
+    paint(d);
+    setTimeout(() => { bar.style.width='0'; bar.style.transition='none'; requestAnimationFrame(()=>{ bar.style.transition='width .3s'; }); }, 300);
+  } catch(e) {
+    bar.style.background = 'var(--red)'; bar.style.width = '100%';
+    setTimeout(() => { bar.style.background = 'linear-gradient(90deg,var(--accent),var(--green))'; bar.style.width='0'; }, 2000);
+  }
+}
+
+// ─── Theme ───────────────────────────────────────────
+let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+function applyTheme() {
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeLabel').textContent = isDark ? 'Switch to light' : 'Switch to dark';
+}
+function toggleTheme() { isDark = !isDark; applyTheme(); }
+applyTheme();
+
+// ─── Keyboard ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if ((e.metaKey||e.ctrlKey) && e.key==='k') { e.preventDefault(); document.getElementById('cmdInput').focus(); }
+  if (e.key==='Escape') closeModal();
+});
+
+// ─── Boot ────────────────────────────────────────────
+tick();
+setInterval(tick, REFRESH_MS);
+</script>
+</body>
+</html>

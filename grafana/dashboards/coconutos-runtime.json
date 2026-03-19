@@ -1,0 +1,250 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "#EAB839", "value": 50},
+              {"color": "red", "value": 100}
+            ]
+          },
+          "unit": "short",
+          "color": {"mode": "thresholds"}
+        }
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "title": "Total LLM Calls",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(dreamteam_llm_calls_total)",
+          "legendFormat": "Total Calls"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "#EAB839", "value": 25},
+              {"color": "red", "value": 40}
+            ]
+          },
+          "unit": "currencyUSD",
+          "color": {"mode": "thresholds"}
+        }
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "title": "Budget Spent (USD)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "dreamteam_budget_spent_usd",
+          "legendFormat": "Budget"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "#EAB839", "value": 5},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "unit": "short",
+          "color": {"mode": "thresholds"}
+        }
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "title": "Tasks Completed",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(dreamteam_tasks_completed_total)",
+          "legendFormat": "Tasks Done"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "blue", "value": null},
+              {"color": "green", "value": 1},
+              {"color": "#EAB839", "value": 5}
+            ]
+          },
+          "unit": "short",
+          "color": {"mode": "thresholds"}
+        }
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]}
+      },
+      "title": "Active Agents",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(dreamteam_llm_calls_total > 0)",
+          "legendFormat": "Active"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "spanNulls": true,
+            "showPoints": "auto",
+            "pointSize": 5
+          }
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 6},
+      "id": 5,
+      "title": "LLM Calls Over Time (by Agent)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "increase(dreamteam_llm_calls_total[5m])",
+          "legendFormat": "Agent {{agent_id}} ({{model}})"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "spanNulls": true
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 6},
+      "id": 6,
+      "title": "Budget Burn Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(dreamteam_budget_spent_usd[5m]) * 60",
+          "legendFormat": "$/min"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "stacking": {"mode": "normal"},
+            "fillOpacity": 80,
+            "lineWidth": 0
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 16},
+      "id": 7,
+      "title": "LLM Calls by Model",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (model) (increase(dreamteam_llm_calls_total[10m]))",
+          "legendFormat": "{{model}}"
+        }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 16},
+      "id": 8,
+      "title": "Per-Agent LLM Calls (Bar)",
+      "type": "barchart",
+      "options": {
+        "orientation": "horizontal",
+        "barWidth": 0.7,
+        "groupWidth": 0.8,
+        "showValue": "always"
+      },
+      "targets": [
+        {
+          "expr": "dreamteam_llm_calls_total",
+          "legendFormat": "Agent {{agent_id}}",
+          "instant": true
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["coconutos", "agents", "observability"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "CoconutOS — Agent Runtime",
+  "uid": "coconutos-runtime",
+  "version": 1
+}

@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: 'CoconutOS'
+    orgId: 1
+    folder: 'CoconutOS'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false
