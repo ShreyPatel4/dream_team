@@ -1,0 +1,23 @@
+inference:
+  mode: "api"  # "api" | "hybrid" | "local"
+
+  api:
+    default_orchestration: "gemini-3.1-pro"
+    default_code: "claude-4.6-opus"
+    default_review: "claude-4.6-opus"
+    default_simple: "gemini-2.5-flash"
+
+  local:
+    ollama_host: "http://localhost:11434"
+    orchestration_model: "qwen2.5:7b-instruct-q4_K_M"
+    code_model: "deepseek-coder-v2:6.7b-instruct-q4_K_M"
+    review_model: "qwen2.5:7b-instruct-q4_K_M"
+    simple_model: "phi3:mini-q4_K_M"
+    context_window: 8192
+    swap_timeout_seconds: 15
+
+  budgets:
+    max_calls_per_simple_task: 12
+    max_calls_per_medium_task: 25
+    max_calls_per_large_task: 60
+    warn_at_percent: 80
